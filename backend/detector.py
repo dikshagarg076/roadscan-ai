@@ -55,6 +55,7 @@ def compute_severity(img_bgr, x1, y1, x2, y2):
 
 
 class RoadDamageDetector:
+
     def __init__(self):
         self.model = None
         self._load_model()
@@ -62,18 +63,29 @@ class RoadDamageDetector:
     def _load_model(self):
         try:
             from ultralytics import YOLO
+            import torch
+            from ultralytics.nn.tasks import DetectionModel
+
+            # 🔥 Fix PyTorch 2.6 issue
+            torch.serialization.add_safe_globals([DetectionModel])
+
             if os.path.exists(MODEL_PATH):
                 self.model = YOLO(MODEL_PATH)
                 print(f"Model loaded from {MODEL_PATH}")
             else:
                 print(f"Model not found at {MODEL_PATH}. Running in DEMO mode.")
+                self.model = None
+
         except ImportError:
             print("ultralytics not installed. Running in DEMO mode.")
+            self.model = None
 
     def detect(self, image: Image.Image) -> dict:
         img_bgr = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+
         if self.model is not None:
             return self._detect_yolo(img_bgr)
+
         return self._detect_demo(img_bgr)
 
     def _detect_yolo(self, img_bgr):
@@ -82,14 +94,16 @@ class RoadDamageDetector:
 
         for box in results.boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
-            conf_val        = float(box.conf[0])
+            conf_val = float(box.conf[0])
+
             score, severity = compute_severity(img_bgr, x1, y1, x2, y2)
+
             detections.append({
-                "class":      "pothole",
+                "class": "pothole",
                 "confidence": round(conf_val, 3),
-                "score":      score,
-                "severity":   severity,
-                "bbox":       [x1, y1, x2, y2],
+                "score": score,
+                "severity": severity,
+                "bbox": [x1, y1, x2, y2],
             })
 
         annotated = self._draw_boxes(img_bgr.copy(), detections)
