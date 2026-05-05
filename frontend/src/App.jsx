@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import "./App.css";
 
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE = process.env.REACT_APP_API_URL || "https://roadscan-ai-3.onrender.com";
 
 const SEVERITY = {
   Low:    { color: "#32CD32", bg: "rgba(50,205,50,0.12)",   border: "rgba(50,205,50,0.35)"   },
