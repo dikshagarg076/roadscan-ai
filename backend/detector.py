@@ -66,22 +66,26 @@ class RoadDamageDetector:
             import torch
             from ultralytics.nn.tasks import DetectionModel
             from torch.nn.modules.container import Sequential
+            from ultralytics.nn.modules.conv import Conv
 
-            # 🔥 Fix PyTorch 2.6 issue
+            # 🔥 Allow required classes
             torch.serialization.add_safe_globals([
                 DetectionModel,
-                Sequential
+                Sequential,
+                Conv
             ])
+
+            MODEL_PATH = "models/best.pt"
 
             if os.path.exists(MODEL_PATH):
                 self.model = YOLO(MODEL_PATH)
-                print(f"Model loaded from {MODEL_PATH}")
+                print(f"✅ Model loaded from {MODEL_PATH}")
             else:
-                print("Model not found. Running in DEMO mode.")
+                print("❌ Model file not found → Demo mode")
                 self.model = None
 
         except Exception as e:
-            print(f"Model loading failed: {e}. Running in DEMO mode.")
+            print(f"❌ Model loading failed: {e}")
             self.model = None
 
     def detect(self, image: Image.Image) -> dict:
